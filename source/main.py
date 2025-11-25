@@ -8,11 +8,11 @@
 import cv2
 # import JsonEmitter as je
 import PoseDetector as pd
-# import PoseRenderer as pr
+import PoseRenderer as pr
 
 def main():
     detector = pd.PoseDetector()
-    # renderer = pr.PoseRenderer()
+    renderer = pr.PoseRenderer()
     # emitter = je.JsonEmitter()
 
     # avvia videocamera
@@ -25,19 +25,15 @@ def main():
             print("errore webcam")
             break
 
-        # prepara immagine per MediaPipe
-        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        image.flags.writeable = False
-
-        keypoints = detector.detect(image)
-        # angles = detector.compute_angles(keypoints)
-        # frame = renderer.draw(frame, keypoints)
+        keypoints = detector.detect(frame)
+        angles = detector.compute_angles(keypoints)
+        frame = renderer.draw(frame, keypoints, angles)
         # emitter.emit(keypoints, angles)
-        if (i == 180):
+
+        # debug print
+        if (i == 3 or i == 60):
             print(keypoints)
-        # ----------------------------------------------
-        # image.flags.writeable = True
-        # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            print(angles)
 
         cv2.imshow('Pose Tracker', frame)
         i += 1
