@@ -1,6 +1,7 @@
 import cv2
 
-EXCLUDED_LANDMARKS = {1, 2, 3, 4, 5, 6, 9, 10}
+EXCLUDED_LANDMARKS = {1, 3, 4, 6, 9, 10}
+VISIBILITY_THRESHOLD = 0.6
 
 class PoseRenderer:
     def __init__ (
@@ -49,15 +50,6 @@ class PoseRenderer:
                 (16, 18),
         ]
 
-        self.ANGLES = [
-            { "name": "right_elbow",  "a": 12, "b": 14, "c": 16 },
-            { "name": "left_elbow",   "a": 11, "b": 13, "c": 15 },
-            { "name": "right_knee",   "a": 24, "b": 26, "c": 28 },
-            { "name": "left_knee",    "a": 23, "b": 25, "c": 27 },
-            { "name": "right_shoulder", "a": 14, "b": 12, "c": 24 },
-            { "name": "left_shoulder",  "a": 13, "b": 11, "c": 23 }
-        ]
-
     def draw(self, frame, keypoints, angles = None):
         if not keypoints:
             return frame
@@ -69,7 +61,7 @@ class PoseRenderer:
 
             x, y = int(kp['x']), int(kp['y'])
 
-            if (kp['visibility'] < 0.5):
+            if (kp['visibility'] < VISIBILITY_THRESHOLD):
                 continue
 
             cv2.circle(frame, (x,y), self.point_radius, self.point_color, -1)
@@ -81,7 +73,8 @@ class PoseRenderer:
             kp2 = keypoints[b]
 
             # check visibility
-            # ...
+            if kp1['visibility'] < VISIBILITY_THRESHOLD or kp2['visibility'] < VISIBILITY_THRESHOLD:
+                continue
 
             x1, y1 = int(kp1['x']), int(kp1['y'])
             x2, y2 = int(kp2['x']), int(kp2['y'])
@@ -93,7 +86,7 @@ class PoseRenderer:
             for a in angles:
                 _, id_vertice, _ = a['points']
                 angle_val = a['angle']
-                print(angle_val)
+                # print(angle_val)
                 kp_vertice = keypoints[id_vertice]
                 x, y = int(kp_vertice['x']), int(kp_vertice['y'])
                 cv2.putText(frame, f"{int(angle_val)}", (x+10, y-10), cv2.FONT_HERSHEY_SIMPLEX, 1, self.point_color, 1)

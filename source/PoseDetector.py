@@ -30,12 +30,53 @@ class PoseDetector:
         )
 
         self.ANGLES = [
-            { "name": "right_elbow",  "a": 12, "b": 14, "c": 16 },
-            { "name": "left_elbow",   "a": 11, "b": 13, "c": 15 },
-            { "name": "right_knee",   "a": 24, "b": 26, "c": 28 },
-            { "name": "left_knee",    "a": 23, "b": 25, "c": 27 },
-            { "name": "right_shoulder", "a": 14, "b": 12, "c": 24 },
-            { "name": "left_shoulder",  "a": 13, "b": 11, "c": 23 }
+            # ---- BRACCIA / SPALLE ----
+            { "name": "right_elbow",       "a": 12, "b": 14, "c": 16 },
+            { "name": "left_elbow",        "a": 11, "b": 13, "c": 15 },
+
+            { "name": "right_shoulder",    "a": 14, "b": 12, "c": 24 },   # braccio-colonna
+            { "name": "left_shoulder",     "a": 13, "b": 11, "c": 23 },
+
+            # ---- BACINO / ANCHE ----
+            # Fless/Estensione anca
+            { "name": "right_hip",         "a": 12, "b": 24, "c": 26 },
+            { "name": "left_hip",          "a": 11, "b": 23, "c": 25 },
+
+            # Abduzione anca (allargare le gambe)
+            # { "name": "right_hip_abduction", "a": 24, "b": 23, "c": 25 },
+            # { "name": "left_hip_abduction",  "a": 23, "b": 24, "c": 26 },
+
+            # Rotazione bacino (utile per stretching schiena)
+            # { "name": "pelvis_rotation",     "a": 23, "b": 24, "c": 26 },  # variazione dx-sx
+
+            # ---- GINOCCHIA ----
+            { "name": "right_knee",        "a": 24, "b": 26, "c": 28 },
+            { "name": "left_knee",         "a": 23, "b": 25, "c": 27 },
+
+            # ---- CAVIGLIE / PIEDE ----
+            # Dorsiflessione / Plantarflessione
+            { "name": "right_ankle",       "a": 26, "b": 28, "c": 30 },
+            { "name": "left_ankle",        "a": 25, "b": 27, "c": 29 },
+
+            # Inversione/Eversione piede (semplificato)
+            # { "name": "right_foot_inversion", "a": 28, "b": 30, "c": 32 },
+            # { "name": "left_foot_inversion",  "a": 27, "b": 29, "c": 31 },
+
+            # ---- COLONNA / TORSO ----
+            # Inclinazione laterale busto
+            { "name": "torso_lateral_bend_right", "a": 12, "b": 24, "c": 26 },
+            { "name": "torso_lateral_bend_left",  "a": 11, "b": 23, "c": 25 },
+
+            # Fless/estensione busto
+            # { "name": "torso_flexion",     "a": 12, "b": 24, "c": 23 },
+
+            # Rotazione busto (stretching toracico)
+            # { "name": "torso_rotation_right", "a": 11, "b": 12, "c": 24 },
+            # { "name": "torso_rotation_left",  "a": 12, "b": 11, "c": 23 },
+
+            # ---- COLLO ----
+            # { "name": "neck_flexion",      "a": 0, "b": 1, "c": 2 },
+            # { "name": "neck_rotation",     "a": 2, "b": 1, "c": 5 }
         ]
     
     def detect(self, image):
@@ -113,7 +154,6 @@ class PoseDetector:
             return angles
         
         for obj in self.ANGLES:
-            # TODO
 
             A = keypoints[obj["a"]]
             B = keypoints[obj["b"]]
@@ -122,7 +162,8 @@ class PoseDetector:
             angle_val = self.compute_angle(A, B, C)
             angles.append({
                 'points' : (obj['a'], obj['b'], obj['c']),
-                'angle' : angle_val
+                'angle' : angle_val,
+                'name' : obj['name']
             })
 
         return angles

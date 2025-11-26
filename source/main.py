@@ -6,14 +6,15 @@
 # main loop orchestra: apre la videocamera e si occupa di chiamare i metodi, scrive nella pipe
 
 import cv2
-# import JsonEmitter as je
+import time
+import JsonEmitter as je
 import PoseDetector as pd
 import PoseRenderer as pr
 
 def main():
     detector = pd.PoseDetector()
     renderer = pr.PoseRenderer()
-    # emitter = je.JsonEmitter()
+    emitter = je.JsonEmitter()
 
     # avvia videocamera
     cap = cv2.VideoCapture(0)
@@ -21,6 +22,7 @@ def main():
     i = 0
     while cap.isOpened() :
         success, frame = cap.read()
+        timestamp = time.time()
         if not success:
             print("errore webcam")
             break
@@ -28,12 +30,13 @@ def main():
         keypoints = detector.detect(frame)
         angles = detector.compute_angles(keypoints)
         frame = renderer.draw(frame, keypoints, angles)
-        # emitter.emit(keypoints, angles)
+        json_str = emitter.emit(keypoints, angles, timestamp)
 
         # debug print
         if (i == 3 or i == 60):
             print(keypoints)
             print(angles)
+            print(json_str)
 
         cv2.imshow('Pose Tracker', frame)
         i += 1
