@@ -50,7 +50,7 @@ class PoseRenderer:
                 (16, 18),
         ]
 
-    def draw(self, frame, keypoints, angles = None):
+    def draw(self, frame, keypoints, angles = None, fps = 0):
         if not keypoints:
             return frame
         
@@ -90,5 +90,9 @@ class PoseRenderer:
                 kp_vertice = keypoints[id_vertice]
                 x, y = int(kp_vertice['x']), int(kp_vertice['y'])
                 cv2.putText(frame, f"{int(angle_val)}", (x+10, y-10), cv2.FONT_HERSHEY_SIMPLEX, 1, self.point_color, 1)
+
+        # disegna gli fps
+        if (fps != 0):
+            cv2.putText(frame, f"FPS: {int(fps)}", (7, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, self.point_color, 2)
 
         return frame

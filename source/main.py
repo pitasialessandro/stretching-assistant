@@ -7,11 +7,18 @@
 
 import cv2
 import time
+import zmq
 import JsonEmitter as je
 import PoseDetector as pd
 import PoseRenderer as pr
 
 def main():
+    # configurazione ZMQ
+    context = zmq.Context()
+    socket = context.socket(zmq.PUB)
+    socket.bind("tcp://*:5555")
+    print("Server ZMQ Avviato sulla porta 5555")
+
     detector = pd.PoseDetector()
     renderer = pr.PoseRenderer()
     emitter = je.JsonEmitter()
@@ -19,29 +26,51 @@ def main():
     # avvia videocamera
     cap = cv2.VideoCapture(0)
 
+    # acquisisce numero frame
+    num_fps = cap.get(cv2.CAP_PROP_FPS)
+    if (num_fps == 0):
+        num_fps = 30
+
+    # variabili per il calcolo degli fps
+    prev_frame_time = 0
+    new_frame_time = 0
+
     i = 0
     while cap.isOpened() :
         success, frame = cap.read()
         timestamp = time.time()
         if not success:
-            print("errore webcam")
+            printf("errore webcam")
             break
+
+        new_frame_time = timestamp
+        fps = 1 / (new_frame_time - prev_frame_time)
+        prev_frame_time = new_frame_time
 
         keypoints = detector.detect(frame)
         angles = detector.compute_angles(keypoints)
-        frame = renderer.draw(frame, keypoints, angles)
-        json_str = emitter.emit(keypoints, angles, timestamp)
+        frame = renderer.draw(frame, keypoints, angles, fps)
 
-        # debug print
-        if (i == 3 or i == 60):
-            print(keypoints)
-            print(angles)
-            print(json_str)
-
+        # stampa a schermo
         cv2.imshow('Pose Tracker', frame)
-        i += 1
         if (cv2.waitKey(5) & 0xFF) == 27: # ESC per uscire
             break
+
+        # debug print
+        if (i % (int(num_fps/9)) == 0):
+            # print(keypoints)
+            # print(angles)
+            # print(json_str)
+            # print(amount_of_frames)
+            json_str = emitter.emit(keypoints, angles, timestamp)
+            #  flags=zmq.NOBLOCK
+            print(f"Sending packet {i}...    \n")
+            try:
+                socket.send_string(json_str, zmq.NOBLOCK)
+            except zmq.Again:
+                print("packet dropped (buffer full)\n")
+
+        i += 1
     
     cap.release()
     cv2.destroyAllWindows()
